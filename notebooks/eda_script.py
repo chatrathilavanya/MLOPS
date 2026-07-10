@@ -181,7 +181,7 @@ def main():
     plot_correlation_heatmap(df)
     plot_missing_values(df)
     plot_feature_relationships(df)
-    print(f"\n✅ All EDA plots saved to: {OUT_DIR}")
+    print(f"\nAll EDA plots saved to: {OUT_DIR}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,12 @@
+{
+  "model_name": "Random Forest",
+  "model_path": "C:\\Users\\mohit\\Desktop\\MLOPS-Assignment\\models\\random_forest.joblib",
+  "metrics": {
+    "accuracy": 0.9016393442622951,
+    "precision": 0.8666666666666667,
+    "recall": 0.9285714285714286,
+    "f1": 0.896551724137931,
+    "roc_auc": 0.9588744588744589
+  },
+  "run_id": "526996a4762d4f4da4a91598c80271ae"
+}
