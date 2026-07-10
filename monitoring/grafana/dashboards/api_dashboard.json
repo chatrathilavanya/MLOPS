@@ -1,0 +1,74 @@
+{
+  "id": null,
+  "title": "Heart Disease API Dashboard",
+  "tags": ["mlops", "fastapi", "heart-disease"],
+  "style": "dark",
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request Rate (req/sec)",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{job=\"heart-disease-api\"}[1m])",
+          "legendFormat": "Requests/sec"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Request Latency (p95)",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"heart-disease-api\"}[5m]))",
+          "legendFormat": "p95 Latency"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Error Rate (%)",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{status=~\"5..\",job=\"heart-disease-api\"}[5m]) / rate(http_requests_total{job=\"heart-disease-api\"}[5m]) * 100",
+          "legendFormat": "Error %"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Total Requests",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "targets": [
+        {
+          "expr": "http_requests_total{job=\"heart-disease-api\"}",
+          "legendFormat": "Total"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Request Rate Over Time",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 4},
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{job=\"heart-disease-api\"}[1m])",
+          "legendFormat": "{{method}} {{handler}} {{status}}"
+        }
+      ]
+    }
+  ]
+}

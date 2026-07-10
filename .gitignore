@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Dataset (too large for git — use download_data.py)
+data/heart.csv
+
+# MLflow
+mlruns/
+mlruns.db
+mlflow_artifacts/
+
+# Trained models (regenerate via train.py)
+models/*.joblib
+models/best_model_info.json
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+
+# pytest cache
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.log
+page1.txt
+extracted_pdfs*.txt
+
+# Secrets
+.env
+*.env
