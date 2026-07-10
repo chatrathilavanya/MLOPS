@@ -24,7 +24,14 @@ def load_best_model():
         )
     with open(info_path) as f:
         info = json.load(f)
-    model = joblib.load(info["model_path"])
+    # Resolve model path: use stored path if it exists, else fall back to MODELS_DIR
+    model_path = info["model_path"]
+    if not os.path.exists(model_path):
+        # Stored path may be a Windows path running in Docker/Linux — use ntpath to extract filename
+        import ntpath
+        model_filename = ntpath.basename(model_path)
+        model_path = os.path.join(MODELS_DIR, model_filename)
+    model = joblib.load(model_path)
     return model, info
 
 
