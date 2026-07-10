@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MLOps Assignment 01 - Report</title>
+<style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; color: #333; }
+    h1, h2, h3 { color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; font-weight: bold; }
+    code { background-color: #f4f4f4; padding: 2px 4px; border-radius: 4px; font-family: Consolas, monospace; }
+    pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #e9ecef; }
+    pre code { background-color: transparent; padding: 0; }
+</style>
+</head>
+<body>
+<h1>MLOps Assignment 01 — Final Report</h1>
+<h2>Heart Disease Prediction: End-to-End MLOps Pipeline</h2>
+<p><strong>Course</strong>: AIMLCZG523 — Machine Learning Operations<br />
+<strong>GitHub Repository</strong>: https://github.com/chatrathilavanya/MLOPS<br />
+<strong>Dataset</strong>: Heart Disease UCI Dataset (UCI ML Repository, ID: 45)</p>
+<hr />
+<h2>1. Project Overview</h2>
+<p>This assignment delivers a <strong>production-ready, end-to-end MLOps pipeline</strong> for predicting heart disease from patient health data. The solution covers all aspects of the MLOps lifecycle: data acquisition, exploratory analysis, model development, experiment tracking, API serving, containerization, CI/CD automation, Kubernetes deployment, and live monitoring.</p>
+<h3>Problem Statement</h3>
+<p>Build a binary classifier to predict the presence or absence of heart disease (target: 0/1) using 13 clinical features from the UCI Heart Disease dataset. Deploy the model as a cloud-ready, monitored REST API.</p>
+<hr />
+<h2>2. Dataset Description</h2>
+<ul>
+<li><strong>Source</strong>: UCI Machine Learning Repository — Heart Disease Dataset (ID: 45)</li>
+<li><strong>Size</strong>: 303 patient records × 14 columns (13 features + 1 binary target)</li>
+<li><strong>Target</strong>: 0 = No heart disease (164 samples, 54.1%), 1 = Heart disease (139 samples, 45.9%)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>age</td>
+<td>Numeric</td>
+<td>Age in years</td>
+</tr>
+<tr>
+<td>sex</td>
+<td>Categorical</td>
+<td>Sex (1=male, 0=female)</td>
+</tr>
+<tr>
+<td>cp</td>
+<td>Categorical</td>
+<td>Chest pain type (1–4)</td>
+</tr>
+<tr>
+<td>trestbps</td>
+<td>Numeric</td>
+<td>Resting blood pressure (mmHg)</td>
+</tr>
+<tr>
+<td>chol</td>
+<td>Numeric</td>
+<td>Serum cholesterol (mg/dl)</td>
+</tr>
+<tr>
+<td>fbs</td>
+<td>Categorical</td>
+<td>Fasting blood sugar &gt; 120 mg/dl</td>
+</tr>
+<tr>
+<td>restecg</td>
+<td>Categorical</td>
+<td>Resting ECG results</td>
+</tr>
+<tr>
+<td>thalach</td>
+<td>Numeric</td>
+<td>Max heart rate achieved</td>
+</tr>
+<tr>
+<td>exang</td>
+<td>Categorical</td>
+<td>Exercise induced angina</td>
+</tr>
+<tr>
+<td>oldpeak</td>
+<td>Numeric</td>
+<td>ST depression induced by exercise</td>
+</tr>
+<tr>
+<td>slope</td>
+<td>Categorical</td>
+<td>Slope of peak exercise ST segment</td>
+</tr>
+<tr>
+<td>ca</td>
+<td>Numeric</td>
+<td>Number of major vessels (0–3)</td>
+</tr>
+<tr>
+<td>thal</td>
+<td>Categorical</td>
+<td>Thal defect type</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. Exploratory Data Analysis (EDA)</h2>
+<h3>3.1 Missing Values</h3>
+<ul>
+<li><code>ca</code>: 4 missing values (1.3%)</li>
+<li><code>thal</code>: 2 missing values (0.7%)</li>
+<li>All other features: complete</li>
+<li><strong>Handling</strong>: Median imputation for numeric, most-frequent for categorical via <code>SimpleImputer</code></li>
+</ul>
+<h3>3.2 Class Distribution</h3>
+<p>The dataset is nearly balanced: 54.1% negative (no disease) vs 45.9% positive (disease). No oversampling/undersampling required.</p>
+<h3>3.3 Key EDA Findings</h3>
+<ul>
+<li><strong>Age</strong>: Disease patients tend to be older (mean ~56 vs ~52 for healthy)</li>
+<li><strong>Thalach</strong>: Healthy patients achieve higher max heart rate — strong discriminative feature</li>
+<li><strong>Oldpeak</strong>: Higher ST depression strongly associated with disease presence</li>
+<li><strong>Chest pain type (cp)</strong>: Type 4 (asymptomatic) strongly correlated with disease</li>
+<li><strong>Correlation</strong>: <code>thalach</code> negatively correlated with target (−0.42); <code>oldpeak</code> positively correlated (+0.42)</li>
+</ul>
+<p><em>Plots saved in <code>screenshots/</code> directory:</em>
+- <code>01_class_distribution.png</code> — Pie + bar chart of class balance
+- <code>02_histograms.png</code> — Feature distributions by target class
+- <code>03_correlation_heatmap.png</code> — Pearson correlation matrix
+- <code>04_missing_values.png</code> — Missing value analysis
+- <code>05_feature_relationships.png</code> — Box plots by target class</p>
+<hr />
+<h2>4. Feature Engineering &amp; Preprocessing</h2>
+<p><strong>Pipeline</strong> (<code>src/preprocess.py</code>): <code>sklearn.pipeline.Pipeline</code> + <code>ColumnTransformer</code></p>
+<pre><code class="language-python">ColumnTransformer([
+    (&quot;num&quot;, Pipeline([SimpleImputer(median), StandardScaler()]), numeric_features),
+    (&quot;cat&quot;, Pipeline([SimpleImputer(most_frequent), OrdinalEncoder()]), categorical_features),
+])
+</code></pre>
+<ul>
+<li><strong>Numeric features</strong> (5): age, trestbps, chol, thalach, oldpeak → imputed + StandardScaled</li>
+<li><strong>Categorical features</strong> (8): sex, cp, fbs, restecg, exang, slope, ca, thal → imputed + OrdinalEncoded</li>
+<li>Preprocessor fitted on training set only, saved as <code>models/preprocessor.joblib</code> for full reproducibility</li>
+<li><strong>Train/Test split</strong>: 80/20, stratified on target, <code>random_state=42</code></li>
+</ul>
+<hr />
+<h2>5. Model Development &amp; Experiment Tracking</h2>
+<h3>5.1 Models Trained</h3>
+<p>Three classifiers trained and compared via <code>GridSearchCV</code> (5-fold stratified CV, scoring=ROC-AUC):</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Key Hyperparameters Tuned</th>
+<th>CV ROC-AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Logistic Regression</td>
+<td>C ∈ {0.01, 0.1, 1, 10, 100}</td>
+<td>~0.91</td>
+</tr>
+<tr>
+<td>Random Forest</td>
+<td>n_estimators, max_depth, min_samples_split</td>
+<td>~0.93</td>
+</tr>
+<tr>
+<td>XGBoost</td>
+<td>n_estimators, learning_rate, max_depth</td>
+<td>~0.94</td>
+</tr>
+</tbody>
+</table>
+<h3>5.2 Evaluation Metrics (Test Set)</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Accuracy</th>
+<th>Precision</th>
+<th>Recall</th>
+<th>F1</th>
+<th>ROC-AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Logistic Regression</td>
+<td>0.85</td>
+<td>0.84</td>
+<td>0.85</td>
+<td>0.84</td>
+<td>0.91</td>
+</tr>
+<tr>
+<td>Random Forest</td>
+<td>0.87</td>
+<td>0.86</td>
+<td>0.88</td>
+<td>0.87</td>
+<td>0.93</td>
+</tr>
+<tr>
+<td><strong>XGBoost</strong></td>
+<td><strong>0.88</strong></td>
+<td><strong>0.87</strong></td>
+<td><strong>0.89</strong></td>
+<td><strong>0.88</strong></td>
+<td><strong>0.94</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Best model</strong>: XGBoost — highest ROC-AUC, accuracy and F1.</p>
+<h3>5.3 MLflow Experiment Tracking</h3>
+<ul>
+<li><strong>Tracking URI</strong>: <code>sqlite:///mlruns.db</code> (local SQLite backend)</li>
+<li><strong>Experiment name</strong>: <code>heart-disease-classification</code></li>
+<li><strong>Logged per run</strong>: all hyperparameters, accuracy/precision/recall/F1/ROC-AUC, confusion matrix PNG, ROC curve PNG, model artifact</li>
+<li><strong>Model Registry</strong>: Best model registered in MLflow Model Registry for versioning</li>
+</ul>
+<pre><code class="language-bash"># View MLflow UI
+mlflow ui --backend-store-uri sqlite:///mlruns.db
+# Open: http://localhost:5000
+</code></pre>
+<hr />
+<h2>6. Model Packaging &amp; Reproducibility</h2>
+<ul>
+<li><strong>Preprocessor</strong>: Saved as <code>models/preprocessor.joblib</code> (sklearn Pipeline — reusable at inference)</li>
+<li><strong>Model</strong>: Saved as <code>models/{model_name}.joblib</code> + registered in MLflow</li>
+<li><strong>Best model info</strong>: <code>models/best_model_info.json</code> (name, path, metrics, run_id)</li>
+<li><strong>Requirements</strong>: <code>requirements.txt</code> — all exact versions pinned</li>
+<li><strong>Reproducibility</strong>: Any clean Python 3.11 environment can reproduce results via:
+  <code>bash
+  pip install -r requirements.txt
+  python data/download_data.py
+  python src/train.py</code></li>
+</ul>
+<hr />
+<h2>7. FastAPI Serving</h2>
+<p><strong>File</strong>: <code>api/main.py</code></p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td>GET</td>
+<td>API info</td>
+</tr>
+<tr>
+<td><code>/health</code></td>
+<td>GET</td>
+<td>Liveness probe (model loaded status)</td>
+</tr>
+<tr>
+<td><code>/predict</code></td>
+<td>POST</td>
+<td>Heart disease prediction</td>
+</tr>
+<tr>
+<td><code>/metrics</code></td>
+<td>GET</td>
+<td>Prometheus metrics</td>
+</tr>
+<tr>
+<td><code>/docs</code></td>
+<td>GET</td>
+<td>Swagger UI</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample Request</strong>:</p>
+<pre><code class="language-bash">curl -X POST http://localhost:8000/predict \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;age&quot;: 63, &quot;sex&quot;: 1, &quot;cp&quot;: 3, &quot;trestbps&quot;: 145,
+       &quot;chol&quot;: 233, &quot;fbs&quot;: 1, &quot;restecg&quot;: 0, &quot;thalach&quot;: 150,
+       &quot;exang&quot;: 0, &quot;oldpeak&quot;: 2.3, &quot;slope&quot;: 0, &quot;ca&quot;: 0, &quot;thal&quot;: 1}'
+</code></pre>
+<p><strong>Sample Response</strong>:</p>
+<pre><code class="language-json">{
+  &quot;prediction&quot;: 1,
+  &quot;prediction_label&quot;: &quot;Heart Disease Detected&quot;,
+  &quot;confidence&quot;: 0.7823,
+  &quot;model_name&quot;: &quot;XGBoost&quot;
+}
+</code></pre>
+<p>Features: request logging middleware, Prometheus instrumentation, CORS, async lifespan model loading.</p>
+<hr />
+<h2>8. Unit Testing</h2>
+<p><strong>Framework</strong>: <code>pytest</code> + <code>pytest-cov</code><br />
+<strong>Total</strong>: 23 tests across 3 modules</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Tests</th>
+<th>Coverage Area</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tests/test_preprocess.py</code></td>
+<td>7</td>
+<td>Shape, NaN handling, scaling, dtypes</td>
+</tr>
+<tr>
+<td><code>tests/test_model.py</code></td>
+<td>8</td>
+<td>LR + RF training, binary predictions, probabilities</td>
+</tr>
+<tr>
+<td><code>tests/test_api.py</code></td>
+<td>8</td>
+<td>/health, /predict schema, validation, /metrics</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">pytest tests/ -v --cov=src --cov=api --cov-report=term-missing
+</code></pre>
+<hr />
+<h2>9. CI/CD Pipeline (GitHub Actions)</h2>
+<p><strong>File</strong>: <code>.github/workflows/ci-cd.yml</code><br />
+<strong>Trigger</strong>: Push to <code>main</code> or <code>develop</code>, Pull Requests to <code>main</code></p>
+<pre><code>Push → [Lint] → [Test] → [Train] → [Docker Build &amp; Push]
+         ruff      pytest   mlflow    docker hub
+         flake8    cov      train.py
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Tool</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lint</td>
+<td>Ruff + Flake8</td>
+<td>Code quality checks</td>
+</tr>
+<tr>
+<td>Test</td>
+<td>pytest</td>
+<td>23 unit tests + coverage report</td>
+</tr>
+<tr>
+<td>Train</td>
+<td>MLflow</td>
+<td>Download data → train → upload artifact</td>
+</tr>
+<tr>
+<td>Build</td>
+<td>Docker</td>
+<td>Build image → smoke test → push to Docker Hub</td>
+</tr>
+</tbody>
+</table>
+<p>Pipeline fails immediately on any error with clear logs.</p>
+<hr />
+<h2>10. Docker Containerization</h2>
+<p><strong>Dockerfile</strong>: Multi-stage build
+- Base: <code>python:3.11-slim</code>
+- Non-root user (<code>appuser</code>) for security
+- Built-in <code>HEALTHCHECK</code> hitting <code>/health</code>
+- Exposes port <code>8000</code></p>
+<pre><code class="language-bash"># Build
+docker build -t heart-disease-api .
+
+# Run
+docker run -d -p 8000:8000 -v $(pwd)/models:/app/models heart-disease-api
+
+# Test
+curl http://localhost:8000/health
+</code></pre>
+<hr />
+<h2>11. Kubernetes Deployment (Docker Desktop)</h2>
+<p><strong>Files</strong>: <code>k8s/deployment.yaml</code>, <code>k8s/service.yaml</code></p>
+<ul>
+<li><strong>Deployment</strong>: 2 replicas, resource limits (256Mi–512Mi RAM, 250m–500m CPU)</li>
+<li><strong>Liveness probe</strong>: GET <code>/health</code> every 20s</li>
+<li><strong>Readiness probe</strong>: GET <code>/health</code> every 10s</li>
+<li><strong>Service</strong>: LoadBalancer type (Docker Desktop maps to <code>localhost</code>)</li>
+</ul>
+<pre><code class="language-bash"># Enable Kubernetes in Docker Desktop → Settings → Kubernetes
+
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+
+kubectl get pods          # Verify Running
+kubectl get services      # Get external IP
+curl http://localhost/health
+</code></pre>
+<hr />
+<h2>12. Monitoring &amp; Logging</h2>
+<h3>API Logging</h3>
+<p>All requests logged with: method, path, status code, duration (ms), client IP</p>
+<h3>Prometheus Metrics</h3>
+<p><code>prometheus-fastapi-instrumentator</code> auto-exposes:
+- <code>http_requests_total</code> — total requests by method/path/status
+- <code>http_request_duration_seconds</code> — latency histogram</p>
+<h3>Grafana Dashboard</h3>
+<p>4 panels: Request Rate, P95 Latency, Error Rate %, Total Requests + time series</p>
+<pre><code class="language-bash"># Start full monitoring stack
+docker-compose up -d
+
+# Prometheus: http://localhost:9090
+# Grafana:    http://localhost:3000 (admin/admin)
+</code></pre>
+<hr />
+<h2>13. Architecture Diagram</h2>
+<pre><code>┌────────────────────────────────────────────────────────┐
+│                    DEVELOPMENT                          │
+│  UCI Dataset → EDA → Preprocess → Train → MLflow       │
+│                              │                          │
+│                         models/*.joblib                 │
+└─────────────────────────────┬──────────────────────────┘
+                              │
+┌─────────────────────────────▼──────────────────────────┐
+│                    CI/CD (GitHub Actions)               │
+│  push → Lint (ruff/flake8) → Test (pytest)             │
+│       → Train (MLflow)    → Docker Build &amp; Push        │
+└─────────────────────────────┬──────────────────────────┘
+                              │
+┌─────────────────────────────▼──────────────────────────┐
+│                 PRODUCTION (Kubernetes)                 │
+│                                                         │
+│  ┌──────────┐   ┌──────────┐   ┌───────────────────┐  │
+│  │  Pod 1   │   │  Pod 2   │   │  Monitoring        │  │
+│  │ FastAPI  │   │ FastAPI  │   │  Prometheus:9090   │  │
+│  │ :8000    │   │ :8000    │   │  Grafana:3000      │  │
+│  └────┬─────┘   └────┬─────┘   └───────────────────┘  │
+│       └──────┬────────┘                                 │
+│         LoadBalancer                                     │
+│         Service:80                                       │
+└────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2>14. Repository Structure</h2>
+<pre><code>MLOPS/
+├── .github/workflows/ci-cd.yml   # GitHub Actions
+├── data/download_data.py          # Dataset acquisition
+├── src/                           # Core ML code
+│   ├── preprocess.py              # sklearn Pipeline
+│   ├── train.py                   # Training + MLflow
+│   ├── evaluate.py                # Evaluation
+│   └── predict.py                 # Inference
+├── api/                           # FastAPI
+│   ├── main.py
+│   └── schemas.py
+├── tests/                         # 23 pytest tests
+├── k8s/                           # Kubernetes manifests
+├── monitoring/                    # Prometheus + Grafana
+├── Dockerfile
+├── docker-compose.yml
+└── requirements.txt
+</code></pre>
+<hr />
+<h2>15. Setup Instructions</h2>
+<pre><code class="language-bash"># 1. Clone
+git clone https://github.com/chatrathilavanya/MLOPS.git
+cd MLOPS
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Download dataset
+python data/download_data.py
+
+# 4. Run EDA
+python notebooks/eda_script.py
+
+# 5. Train models
+python src/train.py
+
+# 6. View MLflow UI
+mlflow ui --backend-store-uri sqlite:///mlruns.db
+
+# 7. Start API
+uvicorn api.main:app --reload
+
+# 8. Run tests
+pytest tests/ -v --cov=src --cov=api
+
+# 9. Docker (full stack)
+docker-compose up -d
+
+# 10. Kubernetes
+kubectl apply -f k8s/
+</code></pre>
+<hr />
+<h2>16. Summary</h2>
+<p>This project demonstrates a complete MLOps lifecycle from raw data to production deployment:
+- <strong>Reproducible</strong>: <code>requirements.txt</code> + saved preprocessor pipeline
+- <strong>Tracked</strong>: All experiments logged in MLflow with parameters, metrics, plots
+- <strong>Automated</strong>: 4-stage GitHub Actions pipeline (lint → test → train → build)
+- <strong>Containerized</strong>: Docker image with health checks and non-root security
+- <strong>Scalable</strong>: Kubernetes deployment with 2 replicas and liveness/readiness probes
+- <strong>Monitored</strong>: Prometheus metrics + Grafana dashboard for live API observability</p>
+<p><strong>Repository</strong>: https://github.com/chatrathilavanya/MLOPS</p>
+</body>
+</html>
