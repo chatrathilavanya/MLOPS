@@ -25,7 +25,7 @@
 
 **Dataset:** UCI Heart Disease dataset (processed Cleveland data)  
 **Source:** https://archive.ics.uci.edu/ml/datasets/heart+Disease  
-**Repository:** https://github.com/no-one-really/mlops
+**Repository:** https://github.com/chatrathilavanya/MLOPS
 
 **Technology Stack:**
 | Layer | Technology |
