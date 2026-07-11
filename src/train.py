@@ -9,8 +9,9 @@ import os
 import sys
 import json
 import joblib
-import numpy as np
+import pandas as pd
 import mlflow
+import mlflow.data
 import mlflow.sklearn
 import mlflow.xgboost
 import matplotlib
@@ -105,6 +106,11 @@ def train_model(name: str, estimator, param_grid: dict,
         mlflow.log_params(search.best_params_)
         mlflow.log_param("model_name", name)
         mlflow.log_param("cv_folds", cv)
+
+        # Log dataset
+        df = pd.read_csv(DATA_PATH)
+        dataset = mlflow.data.from_pandas(df, targets="target", name="Heart Disease UCI Dataset")
+        mlflow.log_input(dataset, context="training")
 
         # Cross-val score on training set
         cv_scores = cross_val_score(best_model, X_train, y_train,

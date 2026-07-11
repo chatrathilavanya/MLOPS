@@ -8,7 +8,7 @@ import numpy as np
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from src.preprocess import build_preprocessor, NUMERIC_FEATURES, CATEGORICAL_FEATURES
+from src.preprocess import build_preprocessor
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 

@@ -162,11 +162,11 @@ def print_summary(df: pd.DataFrame):
     print("DATASET SUMMARY")
     print("=" * 50)
     print(f"Shape: {df.shape}")
-    print(f"\nTarget distribution:")
+    print("\nTarget distribution:")
     print(df["target"].value_counts())
-    print(f"\nMissing values per column:")
+    print("\nMissing values per column:")
     print(df.isnull().sum())
-    print(f"\nDescriptive statistics:")
+    print("\nDescriptive statistics:")
     print(df.describe().round(2).to_string())
 
 

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.2.2
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: "admin"
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: "admin"
+        - name: GF_USERS_ALLOW_SIGN_UP
+          value: "false"
+        volumeMounts:
+        - name: datasource-volume
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: dashboard-provider-volume
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: dashboard-json-volume
+          mountPath: /var/lib/grafana/dashboards
+      volumes:
+      - name: datasource-volume
+        configMap:
+          name: grafana-datasource
+      - name: dashboard-provider-volume
+        configMap:
+          name: grafana-dashboard-provider
+      - name: dashboard-json-volume
+        configMap:
+          name: grafana-dashboard-json
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: grafana

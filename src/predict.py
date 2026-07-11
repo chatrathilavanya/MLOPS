@@ -7,7 +7,6 @@ Used by both the API and standalone scripts.
 import os
 import json
 import joblib
-import numpy as np
 import pandas as pd
 from typing import Union
 

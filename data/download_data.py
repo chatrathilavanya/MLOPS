@@ -5,7 +5,6 @@ Saves the dataset to data/heart.csv
 """
 
 import os
-import sys
 import pandas as pd
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))

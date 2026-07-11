@@ -6,17 +6,13 @@ Generates evaluation plots and prints a full classification report.
 
 import os
 import sys
-import json
 import joblib
-import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 from sklearn.metrics import (
-    classification_report, confusion_matrix,
-    roc_auc_score, roc_curve, accuracy_score,
+    classification_report, roc_auc_score, roc_curve, accuracy_score,
     precision_score, recall_score, f1_score
 )
 

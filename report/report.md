@@ -1,4 +1,4 @@
-# MLOps Assignment 01 - Project Report
+## MLOps Assignment 01 - Project Report
 
 **Name:** [Your Name]  
 **Course:** Machine Learning Operations (AIMLCZG523)  

@@ -56,7 +56,6 @@ class TestPreprocessor:
 
     def test_build_preprocessor_returns_column_transformer(self, sample_dataframe):
         """Preprocessor should be a ColumnTransformer."""
-        from sklearn.compose import ColumnTransformer
         preprocessor = build_preprocessor()
         assert hasattr(preprocessor, "fit_transform")
 

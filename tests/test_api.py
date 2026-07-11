@@ -2,10 +2,8 @@
 
 import os
 import sys
-import json
 import pytest
 import numpy as np
-import joblib
 from unittest.mock import patch, MagicMock
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

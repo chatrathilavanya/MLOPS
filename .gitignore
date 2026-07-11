@@ -51,3 +51,6 @@ extracted_pdfs*.txt
 # Secrets
 .env
 *.env
+
+# Large files
+Postman*.exe
