@@ -90,8 +90,6 @@ jobs:
         run: python data/download_data.py
 
       - name: Train models with MLflow
-        env:
-          MLFLOW_TRACKING_URI: sqlite:///mlruns.db
         run: python src/train.py
 
       - name: Upload trained models as artifact
@@ -116,6 +114,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: trained-models
+          path: .
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
