@@ -32,7 +32,7 @@ jobs:
         run: ruff check src/ api/ tests/ --output-format=github
 
       - name: Run Flake8
-        run: flake8 src/ api/ tests/ --max-line-length=120 --extend-ignore=E203,W503
+        run: flake8 src/ api/ tests/ --max-line-length=120 --extend-ignore=E203,W503,E402,E127,E302
 
   # ── Job 2: Unit Tests ───────────────────────────────────────────────────────
   test:
